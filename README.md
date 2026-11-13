@@ -137,6 +137,18 @@ Minecraft 进程
 
 ---
 
+## 发布
+
+```powershell
+pwsh -File tools/publish.ps1              # 构建 + 上传到 GitHub Releases
+pwsh -File tools/publish.ps1 -Draft       # 先发草稿
+pwsh -File tools/publish.ps1 -SkipBuild   # 用现成 jar
+```
+
+Windows 默认执行策略（RemoteSigned）会拦未签名脚本，用 `-ExecutionPolicy Bypass` 或先 `Unblock-File`：`powershell -ExecutionPolicy Bypass -File tools/publish.ps1`。
+
+脚本从 Git Credential Manager 读凭据，走 API 上传（**单文件上限 2GB**；网页拖拽上传只有 25MB，43MB 的 jar 会被拒）。上传内容：jar + `SHA256SUMS.txt`。
+
 ## 现状与路线
 
 **已经能用**：六机种启动、投屏、掌机界面、存档位、CIA 自动解密、一键安装。
