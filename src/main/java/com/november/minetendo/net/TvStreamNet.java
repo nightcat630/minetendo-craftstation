@@ -44,7 +44,7 @@ public final class TvStreamNet {
     public static final int BUDGET_BYTES_PER_SEC = 512 * 1024;
 
     /** 观众心跳超时（毫秒）；客户端每 2 秒重发一次兴趣 */
-    private static final long VIEWER_TIMEOUT_MS = 6000;
+    public static final long VIEWER_TIMEOUT_MS = 6000;
 
     /** 宿主 demand 重发间隔（毫秒） */
     private static final long DEMAND_REFRESH_MS = 2000;
@@ -182,7 +182,10 @@ public final class TvStreamNet {
             s.viewers.put(viewer.getUUID(), System.currentTimeMillis());
             if (isNew) demand(level, s);
         } else {
-            if (s.viewers.remove(viewer.getUUID()) != null) demand(level, s);
+            if (s.viewers.remove(viewer.getUUID()) != null) {
+                TvSeatNet.noteWatcher(level, p.pos(), viewer.getUUID(), false);
+                demand(level, s);
+            }
         }
     }
 

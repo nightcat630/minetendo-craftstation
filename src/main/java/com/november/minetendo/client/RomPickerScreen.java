@@ -41,6 +41,8 @@ public class RomPickerScreen extends Screen {
     private static final int FOOTER_H = 32;
 
     private final Core core;
+    /** 从方块打开时记录控制席坐标（关闭界面就释放操作席）；从物品打开为 null。 */
+    private net.minecraft.core.BlockPos seatPos;
     private final Screen parent;
     private final boolean inWorld;
 
@@ -67,10 +69,15 @@ public class RomPickerScreen extends Screen {
     public RomPickerScreen(Core core, Screen parent) { this(core, parent, false); }
 
     public RomPickerScreen(Core core, Screen parent, boolean inWorld) {
+        this(core, parent, inWorld, null);
+    }
+
+    public RomPickerScreen(Core core, Screen parent, boolean inWorld, net.minecraft.core.BlockPos seatPos) {
         super(Component.literal("选择" + core.label + "游戏"));
         this.core = core;
         this.parent = parent;
         this.inWorld = inWorld;
+        this.seatPos = seatPos;
     }
 
     private static Path romsDir(Core core) {
@@ -543,5 +550,9 @@ public class RomPickerScreen extends Screen {
     public boolean isPauseScreen() { return false; }
 
     @Override
-    public void onClose() { Minecraft.getInstance().setScreen(parent); }
+    public void onClose() {
+        // 关界面 = 让出操作席（真正开玩时会话自己续期）
+        if (seatPos != null && InWorldSession.activeTv() == null) TvSeats.release(seatPos);
+        Minecraft.getInstance().setScreen(parent);
+    }
 }

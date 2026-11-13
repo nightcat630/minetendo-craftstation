@@ -18,6 +18,8 @@ public final class ClientTicker {
         TvStreamPublisher.tick();
         TvStreamClient.pump();
         TvStreamClient.keepAlive();
+        TvSeats.tick();
+        if (net.minecraft.client.Minecraft.getInstance().level == null) TvSeats.clear();
         if (net.minecraft.client.Minecraft.getInstance().level == null) {
             TvStreamClient.clear();
         } else if ((System.currentTimeMillis() / 1000) % 5 == 0) {

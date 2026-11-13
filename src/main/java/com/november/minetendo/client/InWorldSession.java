@@ -25,6 +25,8 @@ public final class InWorldSession {
             ResourceLocation.fromNamespaceAndPath("minetendo", "in_world_screen");
 
     private static SessionHost session;
+    /** 最近一次被操作的主机方块（停止会话时释放它的操作席）。 */
+    private static net.minecraft.core.BlockPos lastConsole;
     private static DynamicTexture texture;
     private static Core core;
     private static String error = "";
@@ -313,6 +315,12 @@ public final class InWorldSession {
             Minecraft.getInstance().getTextureManager().release(TEX_ID);
             texture = null;
         }
+        // 停止会话 = 让出操作席（别人可以接手）
+        if (lastConsole != null) {
+            TvSeats.release(lastConsole);
+            lastConsole = null;
+        }
+
         lastSeq = 0;
         activeTv = null;
     }

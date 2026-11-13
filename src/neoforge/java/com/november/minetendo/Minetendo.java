@@ -56,12 +56,19 @@ public final class Minetendo {
                 if (p instanceof com.november.minetendo.net.TvStreamStatePayload s) com.november.minetendo.client.TvStreamClient.onState(s);
                 else if (p instanceof com.november.minetendo.net.TvFramePayload f) com.november.minetendo.client.TvStreamClient.onFrame(f);
                 else if (p instanceof com.november.minetendo.net.TvHostDemandPayload d) com.november.minetendo.client.TvStreamPublisher.onDemand(d);
+                else if (p instanceof com.november.minetendo.net.TvSeatStatePayload s) com.november.minetendo.client.TvSeats.onState(s);
+            });
+            com.november.minetendo.net.TvSeatNet.setClientSink(p -> {
+                if (p instanceof com.november.minetendo.net.TvSeatStatePayload s) com.november.minetendo.client.TvSeats.onState(s);
             });
         }
+        modBus.addListener(com.november.minetendo.net.TvSeatNet::register);
         modBus.addListener(com.november.minetendo.net.RomServerNet::register);
         modBus.addListener(com.november.minetendo.net.TvStreamNet::register);
         MinetendoItems.register(modBus);
         com.november.minetendo.client.CrtTvRegistry.register(modBus);
+        // 服务端 tick：清理过期操作席（与客户端无关，所有环境都挂）
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(com.november.minetendo.net.SeatServerTicker::onTick);
         // 电视投屏：手动挂到游戏事件总线（RenderLevelStageEvent 属于游戏总线）
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
             net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(com.november.minetendo.client.TvScreenLayer::onRender);
