@@ -25,6 +25,8 @@ neoForge {
     runs {
         client {
             client()
+            // 统一开发实例：别再生成 run/ 造成第二个实例
+            gameDirectory = file("D:/Minetendo-Instance-20261113-1919/neoforge-1.21.1/run")
         }
 
         // 服务端运行配置。这个模组在服务端是有活干的：开一个只发给本服玩家的
@@ -32,6 +34,7 @@ neoForge {
         // 没有 server 配置，服主那条路径就永远只能靠"读代码相信它行"。
         server {
             server()
+            gameDirectory = file("D:/Minetendo-Instance-20261113-1919/neoforge-1.21.1/server")
         }
 
         configureEach {
