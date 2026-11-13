@@ -176,7 +176,20 @@ Windows 默认执行策略（RemoteSigned）会拦未签名脚本，用 `-Execut
 
 ## 许可证
 
-代码：**GPL-3.0-or-later**
+本项目代码以 **GPL-3.0-or-later** 授权，全文见 [LICENSE](LICENSE)。
+
+第三方组件遵循各自许可证（以 jar 内实际分发为准）：
+
+| 组件 | 许可证 |
+|---|---|
+| Azahar（3DS 核心） | GPL-3.0 |
+| mGBA | MPL-2.0 |
+| Snes9x | 自定义（非商业） |
+| PCSX2 | LGPL-3.0 |
+| PPSSPP | GPL-2.0-or-later |
+| libretro API 头文件 | 公有领域 / CC0 |
+
+如果你要二次分发打包了核心的 jar，请自行确认上述许可证的合规性（尤其 Snes9x 的非商业条款）。
 
 ---
 
