@@ -51,7 +51,9 @@ public final class Minetendo {
         // 首次启动自解包：核心 / BIOS / PPSSPP 资源 / 目录骨架（让 jar 丢进 mods 即可用）
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
             com.november.minetendo.client.RuntimeBootstrap.install();
+            com.november.minetendo.client.RomLibrary.init();
         }
+        modBus.addListener(com.november.minetendo.net.RomServerNet::register);
         modBus.addListener(com.november.minetendo.net.TvStreamNet::register);
         MinetendoItems.register(modBus);
         com.november.minetendo.client.CrtTvRegistry.register(modBus);

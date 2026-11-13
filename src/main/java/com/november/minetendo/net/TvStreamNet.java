@@ -14,23 +14,17 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /**
  * 电视串流的网络层：宿主客户端 → 服务器 → 附近观战客户端。
  *
- * <p>为什么走服务器中转而不是 P2P/HTTP：
- * <ul>
- *   <li>玩家之间通常互不可达（NAT），直连要打洞或开端口；</li>
- *   <li>服务器天然知道"谁在电视附近"，可以只发给需要的人，避免广播浪费；</li>
- *   <li>权限也简单：服务器可以按距离/人数限流。</li>
- * </ul>
+ * <p><b>注意</b>：同一个 payload 类型只能注册一次，不能既 {@code playToServer} 又
+ * {@code playToClient} —— 那会抛 {@code Cannot register payload ... already registered}。
+ * 双向包必须用 {@code playBidirectional}，在同一个处理函数里按"我是不是服务端"分流。
  *
- * <p>带宽：一帧 JPEG 320×240 质量 0.5 约 10~15KB，默认 12fps ≈ 150KB/s/观众。
+ * <p>带宽：一帧 JPEG 320×240 质量 0.5 约 10~15KB，默认 12fps ≈ 150KB/s/观众，
  * 只发给 {@value #RADIUS} 格内的玩家。
  */
 public final class TvStreamNet {
 
     /** 只转发给电视这个半径内的玩家（格） */
     public static final double RADIUS = 64.0;
-
-    /** 每个玩家每秒最多接受的字节（软限流，防止刷爆） */
-    private static final int MAX_BYTES_PER_SEC = 2 * 1024 * 1024;
 
     /** 单人调试回环（-Dminetendo.tvLoopback=true） */
     private static final boolean LOOPBACK = Boolean.getBoolean("minetendo.tvLoopback");
@@ -40,31 +34,30 @@ public final class TvStreamNet {
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
         PayloadRegistrar reg = event.registrar("1");
-        reg.playToServer(TvStreamStatePayload.TYPE, TvStreamStatePayload.STREAM_CODEC, TvStreamNet::onStateFromHost);
-        reg.playToServer(TvFramePayload.TYPE, TvFramePayload.STREAM_CODEC, TvStreamNet::onFrameFromHost);
-        reg.playToClient(TvStreamStatePayload.TYPE, TvStreamStatePayload.STREAM_CODEC, TvStreamNet::onStateToViewer);
-        reg.playToClient(TvFramePayload.TYPE, TvFramePayload.STREAM_CODEC, TvStreamNet::onFrameToViewer);
+        reg.playBidirectional(TvStreamStatePayload.TYPE, TvStreamStatePayload.STREAM_CODEC, TvStreamNet::onState);
+        reg.playBidirectional(TvFramePayload.TYPE, TvFramePayload.STREAM_CODEC, TvStreamNet::onFrame);
     }
 
-    // ── 服务器侧：收到宿主的包，转发给附近玩家 ──
+    // ── 同一个处理函数，一半是服务端中继、一半是客户端接收 ──
 
-    private static void onStateFromHost(TvStreamStatePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer from)) return;
-            if (!(from.level() instanceof ServerLevel level)) return;
-            relay(level, from, payload.pos(), payload);
-        });
+    private static void onState(TvStreamStatePayload payload, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer from) {
+            context.enqueueWork(() -> relay(from, payload.pos(), payload));
+        } else {
+            context.enqueueWork(() -> TvStreamClient.onState(payload));
+        }
     }
 
-    private static void onFrameFromHost(TvFramePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer from)) return;
-            if (!(from.level() instanceof ServerLevel level)) return;
-            relay(level, from, payload.pos(), payload);
-        });
+    private static void onFrame(TvFramePayload payload, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer from) {
+            context.enqueueWork(() -> relay(from, payload.pos(), payload));
+        } else {
+            context.enqueueWork(() -> TvStreamClient.onFrame(payload));
+        }
     }
 
-    private static void relay(ServerLevel level, ServerPlayer from, BlockPos pos, net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+    private static void relay(ServerPlayer from, BlockPos pos, net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+        if (!(from.level() instanceof ServerLevel level)) return;
         PacketDistributor.sendToPlayersNear(level, from, pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0,
                 RADIUS, payload);
         // 调试：-Dminetendo.tvLoopback=true 时把包也回给宿主，单人世界即可验证
@@ -72,15 +65,5 @@ public final class TvStreamNet {
         if (LOOPBACK) {
             PacketDistributor.sendToPlayer(from, payload);
         }
-    }
-
-    // ── 客户端侧：宿主自己也会收到中继回来的包，忽略即可 ──
-
-    private static void onStateToViewer(TvStreamStatePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> TvStreamClient.onState(payload));
-    }
-
-    private static void onFrameToViewer(TvFramePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> TvStreamClient.onFrame(payload));
     }
 }
