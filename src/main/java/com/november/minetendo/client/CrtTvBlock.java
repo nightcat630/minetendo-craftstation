@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 package com.november.minetendo.client;
 
 import com.mojang.serialization.MapCodec;

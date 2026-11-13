@@ -1,5 +1,7 @@
 # Minetendo & CraftStation
 
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
 **在 Minecraft 里，真的把 3DS、NDS、GBA、SFC、PS2、PSP 打开。**
 
 不是贴图方块，不是网页模拟器挂个屏幕 —— 六个真实的 libretro 核心（加上我们自己写的原生宿主）跑在 MC 进程里，画面贴在你能放下、能走过去、能打开的机器上。
