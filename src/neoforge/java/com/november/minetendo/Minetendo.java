@@ -52,6 +52,7 @@ public final class Minetendo {
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
             com.november.minetendo.client.RuntimeBootstrap.install();
         }
+        modBus.addListener(com.november.minetendo.net.TvStreamNet::register);
         MinetendoItems.register(modBus);
         com.november.minetendo.client.CrtTvRegistry.register(modBus);
         // 电视投屏：手动挂到游戏事件总线（RenderLevelStageEvent 属于游戏总线）

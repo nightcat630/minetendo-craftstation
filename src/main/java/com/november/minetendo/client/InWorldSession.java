@@ -135,6 +135,9 @@ public final class InWorldSession {
 
     private InWorldSession() {}
 
+    /** 当前会话（供推流等内部使用）。 */
+    public static SessionHost session() { return session; }
+
     public static boolean running() { return session != null && session.ready() && !session.failed(); }
     public static ResourceLocation textureId() { return texture != null ? TEX_ID : null; }
     public static String error() { return error; }

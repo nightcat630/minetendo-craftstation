@@ -59,8 +59,8 @@ public final class TvScreenLayer {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) return;
         var mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        ResourceLocation tex = InWorldSession.textureId();
-        if (tex == null) return;
+        // 本地会话纹理（宿主自己）与远端流纹理（观战者）二选一
+        ResourceLocation localTex = InWorldSession.textureId();
 
         Vec3 cam = event.getCamera().getPosition();
         // 投屏日志：每秒一次，看清"有没有激活的电视 / 画了几台"
@@ -78,7 +78,11 @@ public final class TvScreenLayer {
             if (!mc.level.isLoaded(pos)) continue;
             BlockState state = mc.level.getBlockState(pos);
             if (!(state.getBlock() instanceof CrtTvBlock)) continue;
-            if (!pos.equals(InWorldSession.activeTv())) continue;   // 只画被激活的那台电视
+            boolean isLocal = pos.equals(InWorldSession.activeTv()) && localTex != null;
+            boolean isRemote = TvStreamClient.has(pos);
+            if (!isLocal && !isRemote) continue;   // 本地在播，或者收到了别人的流
+            ResourceLocation tex = isLocal ? localTex : TvStreamClient.texture(pos);
+            if (tex == null) continue;
             if (cam.distanceToSqr(Vec3.atCenterOf(pos)) > 64 * 64) continue;
 
             Direction facing = CrtTvBlock.facing(state);

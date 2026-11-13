@@ -14,5 +14,13 @@ public final class ClientTicker {
     @SubscribeEvent
     public static void onTick(ClientTickEvent.Post event) {
         InWorldSession.tick();
+        // 联机电视流：宿主推流 / 观战端解码上传 / 超时清理
+        TvStreamPublisher.tick();
+        TvStreamClient.pump();
+        if (net.minecraft.client.Minecraft.getInstance().level == null) {
+            TvStreamClient.clear();
+        } else if ((System.currentTimeMillis() / 1000) % 5 == 0) {
+            TvStreamClient.prune();
+        }
     }
 }
