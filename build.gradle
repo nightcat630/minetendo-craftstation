@@ -66,13 +66,6 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
-dependencies {
-    // MCphone 本体：硬前置。本体没有公开 maven，走 libs/ 下的 jar。
-    // compileOnly + localRuntime，不是 implementation —— 后者会试图把本体
-    // 打进我们的 jar，那是灾难。
-    compileOnly fileTree(dir: "libs", include: ["mcphone-1.12.0.jar"])
-    localRuntime files("libs/mcphone-${mcphone_version}.jar")
-}
 
 // ── 原生库 ────────────────────────────────────────────────────────────────
 //
@@ -127,7 +120,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_license            : mod_license,
             mod_version            : mod_version,
             mod_authors            : mod_authors,
-            mcphone_version        : mcphone_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
