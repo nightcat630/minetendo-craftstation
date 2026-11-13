@@ -17,6 +17,7 @@ public final class ClientTicker {
         // 联机电视流：宿主推流 / 观战端解码上传 / 超时清理
         TvStreamPublisher.tick();
         TvStreamClient.pump();
+        TvStreamClient.keepAlive();
         if (net.minecraft.client.Minecraft.getInstance().level == null) {
             TvStreamClient.clear();
         } else if ((System.currentTimeMillis() / 1000) % 5 == 0) {

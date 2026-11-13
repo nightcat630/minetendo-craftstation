@@ -52,6 +52,11 @@ public final class Minetendo {
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
             com.november.minetendo.client.RuntimeBootstrap.install();
             com.november.minetendo.client.RomLibrary.init();
+            com.november.minetendo.net.TvStreamNet.setClientSink(p -> {
+                if (p instanceof com.november.minetendo.net.TvStreamStatePayload s) com.november.minetendo.client.TvStreamClient.onState(s);
+                else if (p instanceof com.november.minetendo.net.TvFramePayload f) com.november.minetendo.client.TvStreamClient.onFrame(f);
+                else if (p instanceof com.november.minetendo.net.TvHostDemandPayload d) com.november.minetendo.client.TvStreamPublisher.onDemand(d);
+            });
         }
         modBus.addListener(com.november.minetendo.net.RomServerNet::register);
         modBus.addListener(com.november.minetendo.net.TvStreamNet::register);
