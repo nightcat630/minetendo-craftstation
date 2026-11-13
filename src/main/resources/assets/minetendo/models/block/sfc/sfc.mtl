@@ -1,0 +1,12 @@
+# Blender 5.0.0 Beta MTL File: 'sfc.blend'
+# www.blender.org
+
+newmtl SFC_Atlas
+Ns 291.599945
+Ka 1.000000 1.000000 1.000000
+Ks 0.450000 0.450000 0.450000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd #SFC_Atlas

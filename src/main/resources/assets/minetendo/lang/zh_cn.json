@@ -1,0 +1,40 @@
+{
+  "itemGroup.minetendo": "Minetendo & CraftStation",
+
+  "item.minetendo.gba": "GBA 掌机",
+  "item.minetendo.gba.desc": "Game Boy Advance。右键开机，ESC 暂停，右上角退出。",
+  "block.minetendo.gba_console": "GBA 掌机",
+  "item.minetendo.gba_console": "GBA 掌机",
+  "item.minetendo.gba_console.desc": "右键全屏游玩；Shift+右键放到地上，再右键方块投屏到旁边的电视。",
+
+  "block.minetendo.sfc_console": "SFC 主机",
+  "item.minetendo.sfc_console": "SFC 主机",
+  "item.minetendo.sfc_console.desc": "Super Famicom。右键全屏游玩；Shift+右键放置，方块右键投屏到电视。",
+
+  "block.minetendo.crt_tv": "CRT 电视",
+  "item.minetendo.crt_tv": "CRT 电视",
+  "item.minetendo.crt_tv.desc": "2×2 的 90 年代 4:3 电视。摆在主机旁边，游戏画面会投到屏幕上。",
+
+  "item.minetendo.sfc_pad": "SFC 手柄",
+  "item.minetendo.sfc_pad.desc": "坐在电视前玩 SFC 时拿在手里。",
+
+  "block.minetendo.nds_console": "NDS 掌机",
+  "item.minetendo.nds_console": "NDS 掌机",
+  "item.minetendo.nds_console.desc": "右键全屏游玩；Shift+右键放下当作摆件。",
+
+  "block.minetendo.nds3_console": "3DS 掌机",
+  "item.minetendo.nds3_console": "3DS 掌机",
+  "item.minetendo.nds3.desc": "右键全屏游玩；Shift+右键放下当作摆件。",
+
+  "block.minetendo.ps2": "PS2 主机",
+  "item.minetendo.ps2": "PS2 主机",
+  "item.minetendo.ps2.desc": "主机。拿在手上不能玩：Shift+右键放到地上，再右键方块投屏到旁边的电视。",
+
+  "block.minetendo.psp": "PSP 掌机",
+  "item.minetendo.psp": "PSP 掌机",
+  "item.minetendo.psp.desc": "右键全屏游玩；Shift+右键放置，方块右键投屏到旁边的电视。",
+
+  "block.minetendo.arcade_cabinet": "街机",
+  "item.minetendo.arcade_cabinet": "街机",
+  "item.minetendo.arcade_cabinet.desc": "一台街机柜。放下来后右键投币开机。"
+}

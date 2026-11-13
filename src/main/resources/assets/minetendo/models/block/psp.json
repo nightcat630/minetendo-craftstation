@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/psp/psp_quads.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "textures": {
+    "particle": "minetendo:block/psp/psp_atlas",
+    "PSP_Atlas": "minetendo:block/psp/psp_atlas",
+    "psp_atlas": "minetendo:block/psp/psp_atlas"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "minetendo:block/psp", "y": 180 },
+    "facing=east":  { "model": "minetendo:block/psp", "y": 270 },
+    "facing=south": { "model": "minetendo:block/psp", "y": 0 },
+    "facing=west":  { "model": "minetendo:block/psp", "y": 90 }
+  }
+}

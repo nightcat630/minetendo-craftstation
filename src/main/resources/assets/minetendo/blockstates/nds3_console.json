@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "minetendo:block/nds3_console", "y": 0 },
+    "facing=east":  { "model": "minetendo:block/nds3_console", "y": 90 },
+    "facing=south": { "model": "minetendo:block/nds3_console", "y": 180 },
+    "facing=west":  { "model": "minetendo:block/nds3_console", "y": 270 }
+  }
+}

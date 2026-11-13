@@ -1,0 +1,40 @@
+{
+  "itemGroup.minetendo": "Minetendo & CraftStation",
+
+  "item.minetendo.gba": "GBA Handheld",
+  "item.minetendo.gba.desc": "Game Boy Advance. Right-click to play, ESC to pause.",
+  "block.minetendo.gba_console": "GBA Handheld",
+  "item.minetendo.gba_console": "GBA Handheld",
+  "item.minetendo.gba_console.desc": "Right-click to play fullscreen; sneak-right-click to place, then right-click it to cast to a nearby TV.",
+
+  "block.minetendo.sfc_console": "SFC Console",
+  "item.minetendo.sfc_console": "SFC Console",
+  "item.minetendo.sfc_console.desc": "Super Famicom. Right-click to play; sneak-right-click to place, then right-click the block to cast to a TV.",
+
+  "block.minetendo.crt_tv": "CRT TV",
+  "item.minetendo.crt_tv": "CRT TV",
+  "item.minetendo.crt_tv.desc": "A 2x2 90s 4:3 TV. Put it next to a console to play on the screen.",
+
+  "item.minetendo.sfc_pad": "SFC Gamepad",
+  "item.minetendo.sfc_pad.desc": "Held while playing SFC in front of the TV.",
+
+  "block.minetendo.nds_console": "NDS Handheld",
+  "item.minetendo.nds_console": "NDS Handheld",
+  "item.minetendo.nds_console.desc": "Right-click to play fullscreen; sneak-right-click to place as decoration.",
+
+  "block.minetendo.nds3_console": "3DS Handheld",
+  "item.minetendo.nds3_console": "3DS Handheld",
+  "item.minetendo.nds3.desc": "Right-click to play fullscreen; sneak-right-click to place as decoration.",
+
+  "block.minetendo.ps2": "PS2 Console",
+  "item.minetendo.ps2": "PS2 Console",
+  "item.minetendo.ps2.desc": "A home console - cannot be played from the hand. Sneak-right-click to place, then right-click it to cast to a nearby TV.",
+
+  "block.minetendo.psp": "PSP Handheld",
+  "item.minetendo.psp": "PSP Handheld",
+  "item.minetendo.psp.desc": "Right-click to play fullscreen; sneak-right-click to place, then right-click it to cast to a TV.",
+
+  "block.minetendo.arcade_cabinet": "Arcade Cabinet",
+  "item.minetendo.arcade_cabinet": "Arcade Cabinet",
+  "item.minetendo.arcade_cabinet.desc": "An arcade cabinet. Place it, then right-click to insert a coin."
+}

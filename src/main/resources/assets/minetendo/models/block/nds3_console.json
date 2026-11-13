@@ -1,0 +1,11 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/nds3/nds3.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": false,
+  "textures": {
+    "particle": "minetendo:block/nds3/nds3_atlas",
+    "3DS_Atlas": "minetendo:block/nds3/nds3_atlas"
+  }
+}

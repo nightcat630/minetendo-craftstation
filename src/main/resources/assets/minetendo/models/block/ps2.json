@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/ps2/ps2.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "textures": {
+    "particle": "minetendo:block/ps2/ps2_atlas",
+    "PS2_Atlas": "minetendo:block/ps2/ps2_atlas",
+    "ps2_atlas": "minetendo:block/ps2/ps2_atlas"
+  }
+}

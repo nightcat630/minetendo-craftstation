@@ -1,0 +1,11 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/gba/gba.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "textures": {
+    "particle": "minetendo:block/gba/gba_atlas",
+    "GBA_Atlas": "minetendo:block/gba/gba_atlas"
+  }
+}

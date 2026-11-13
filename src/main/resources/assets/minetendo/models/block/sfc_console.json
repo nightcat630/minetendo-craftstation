@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/sfc/sfc.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "textures": {
+    "particle": "minetendo:block/sfc/sfc_atlas",
+    "SFC_Atlas": "minetendo:block/sfc/sfc_atlas",
+    "sfc_atlas": "minetendo:block/sfc/sfc_atlas"
+  }
+}

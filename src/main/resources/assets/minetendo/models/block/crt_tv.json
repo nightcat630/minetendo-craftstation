@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/crt_tv/crt_tv.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "textures": {
+    "particle": "minetendo:block/crt_tv/tv_atlas",
+    "TV_Atlas": "minetendo:block/crt_tv/tv_atlas",
+    "tv_atlas": "minetendo:block/crt_tv/tv_atlas"
+  }
+}

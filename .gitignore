@@ -1,0 +1,44 @@
+# 构建产物
+build/
+out/
+*.class
+
+# gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# 运行目录（含核心、BIOS、存档、ROM，绝不提交）
+run/
+runs/
+logs/
+crash-reports/
+*.log
+
+# 原生构建中间物
+src/native/*.o
+src/native/*.obj
+
+# 大体积二进制：用 Release 分发，不进 git
+# 如果你确实要提交，请改用 Git LFS
+src/main/resources/minetendo/native/windows-x86_64/*.dll
+src/main/resources/minetendo/tools/3ds/*.exe
+src/main/resources/minetendo/tools/3ds/*.bin
+src/main/resources/minetendo/bios/ps2/*.bin
+
+# 未注册/备份资源
+unused-resources/
+*_app_backup/
+
+# 系统
+Thumbs.db
+.DS_Store
+desktop.ini
