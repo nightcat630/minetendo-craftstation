@@ -3,6 +3,12 @@
 
   "item.minetendo.gba": "GBA Handheld",
   "item.minetendo.gba.desc": "Game Boy Advance. Right-click to play, ESC to pause.",
+
+  "item.minetendo.gamepad": "Gamepad",
+  "item.minetendo.gamepad.desc": "Right-click while holding to control the game on a TV. Right-click again or switch items to stop.",
+  "block.minetendo.lcd_tv": "LCD TV",
+  "item.minetendo.lcd_tv": "LCD TV",
+  "item.minetendo.lcd_tv.desc": "Horizontal flat-panel LCD TV (4x3 blocks) for home consoles.",
   "block.minetendo.gba_console": "GBA Handheld",
   "item.minetendo.gba_console": "GBA Handheld",
   "item.minetendo.gba_console.desc": "Right-click to play fullscreen; sneak-right-click to place, then right-click it to cast to a nearby TV.",

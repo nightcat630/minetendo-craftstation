@@ -1,5 +1,6 @@
 {
   "loader": "neoforge:obj",
+    "emissive_ambient": false,
   "model": "minetendo:models/block/ps2/ps2.obj",
   "flip_v": true,
   "automatic_culling": false,

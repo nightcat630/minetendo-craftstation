@@ -1,5 +1,6 @@
 {
   "loader": "neoforge:obj",
+    "emissive_ambient": false,
   "model": "minetendo:models/block/psp/psp_quads.obj",
   "flip_v": true,
   "automatic_culling": false,

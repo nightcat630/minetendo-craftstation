@@ -19,7 +19,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /** CRT 电视（与 1.20 的 CrtTvBlock 对齐：2×2 碰撞盒、MODEL 渲染、屏幕由 BER 贴图）。 */
-public class CrtTvBlock extends BaseEntityBlock {
+public class CrtTvBlock extends BaseEntityBlock implements TvScreen {
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final MapCodec<CrtTvBlock> CODEC = simpleCodec(CrtTvBlock::new);
@@ -56,6 +56,13 @@ public class CrtTvBlock extends BaseEntityBlock {
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new CrtTvBlockEntity(pos, state); }
 
     public static Direction facing(BlockState state) { return state.getValue(FACING); }
+
+    // ── 屏幕矩形（由 crt_tv.obj 的 screen UV 反查得到）──
+    @Override public float screenCenterX() { return 0.8125f; }
+    @Override public float screenCenterY() { return 1.0750f; }
+    @Override public float screenHalfW() { return 0.6875f; }
+    @Override public float screenHalfH() { return 0.5156f; }
+    @Override public float screenFaceZ() { return 1.0520f; }
 
     /**
      * 右键电视：**只**给提示，不激活任何东西。

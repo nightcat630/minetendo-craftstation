@@ -3,6 +3,12 @@
 
   "item.minetendo.gba": "GBA 掌机",
   "item.minetendo.gba.desc": "Game Boy Advance。右键开机，ESC 暂停，右上角退出。",
+
+  "item.minetendo.gamepad": "游戏手柄",
+  "item.minetendo.gamepad.desc": "手持右键进入操作模式，才能控制电视上的游戏；再右键或切换物品退出。",
+  "block.minetendo.lcd_tv": "液晶电视",
+  "item.minetendo.lcd_tv": "液晶电视",
+  "item.minetendo.lcd_tv.desc": "横向平板液晶电视（4×3 格）。配 PS2 这类家用机；右键主机开机。",
   "block.minetendo.gba_console": "GBA 掌机",
   "item.minetendo.gba_console": "GBA 掌机",
   "item.minetendo.gba_console.desc": "右键全屏游玩；Shift+右键放到地上，再右键方块投屏到旁边的电视。",

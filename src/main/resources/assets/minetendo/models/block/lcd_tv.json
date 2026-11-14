@@ -1,0 +1,13 @@
+{
+  "loader": "neoforge:obj",
+  "model": "minetendo:models/block/lcd_tv/lcd_tv.obj",
+  "emissive_ambient": false,
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "textures": {
+    "particle": "minetendo:block/lcd_tv/tv_atlas",
+    "TV_Atlas": "minetendo:block/lcd_tv/tv_atlas",
+    "tv_atlas": "minetendo:block/lcd_tv/tv_atlas"
+  }
+}

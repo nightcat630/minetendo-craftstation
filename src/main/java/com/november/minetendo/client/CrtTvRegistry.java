@@ -27,6 +27,11 @@ public final class CrtTvRegistry {
             () -> new CrtTvBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f).sound(SoundType.METAL).noOcclusion()));
 
+    // ── 横向平板电视 4×3（配 PS2 这类家用机）──
+    public static final DeferredBlock<Block> LCD_TV = BLOCKS.register("lcd_tv",
+            () -> new LcdTvBlock(BlockBehaviour.Properties.of()
+                    .strength(1.6f).sound(SoundType.METAL).noOcclusion()));
+
     // ── 四台游戏机 ──
     public static final DeferredBlock<Block> SFC_CONSOLE = BLOCKS.register("sfc_console",
             () -> new ConsoleBlock(Core.SFC, ConsoleBlock.flatShape(),
@@ -55,9 +60,14 @@ public final class CrtTvRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrtTvBlockEntity>> TV_BE =
             BE_TYPES.register("crt_tv", () -> BlockEntityType.Builder.of(CrtTvBlockEntity::new, TV.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrtTvBlockEntity>> LCD_TV_BE =
+            BE_TYPES.register("lcd_tv", () -> BlockEntityType.Builder.of(CrtTvBlockEntity::new, LCD_TV.get()).build(null));
+
     // ── 物品：右键全屏玩、Shift+右键放置 ──
     public static final DeferredHolder<Item, Item> TV_ITEM =
             ITEMS.register("crt_tv", () -> new BlockItem(TV.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LCD_TV_ITEM =
+            ITEMS.register("lcd_tv", () -> new BlockItem(LCD_TV.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SFC_CONSOLE_ITEM =
             ITEMS.register("sfc_console", () -> new ConsoleBlockItem(SFC_CONSOLE.get(), Core.SFC, new Item.Properties()));
     public static final DeferredHolder<Item, Item> GBA_CONSOLE_ITEM =
@@ -72,6 +82,10 @@ public final class CrtTvRegistry {
 
     public static final DeferredHolder<Item, Item> PSP_CONSOLE_ITEM =
             ITEMS.register("psp", () -> new ConsoleBlockItem(PSP_CONSOLE.get(), Core.PSP, new Item.Properties()));
+
+    // ── 游戏手柄（操作电视必需）──
+    public static final DeferredHolder<Item, Item> GAMEPAD =
+            ITEMS.register("gamepad", () -> new GamepadItem(new Item.Properties().stacksTo(1)));
 
     private CrtTvRegistry() {}
 

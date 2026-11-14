@@ -86,6 +86,8 @@ public final class TvScreenLayer {
             if (cam.distanceToSqr(Vec3.atCenterOf(pos)) > 64 * 64) continue;
 
             Direction facing = CrtTvBlock.facing(state);
+            // 不同大小的电视屏幕位置不同：向方块本体问（2×2 老电视 / 3×4 大电视）
+            TvScreen screen = (TvScreen) state.getBlock();
             PoseStack pose = event.getPoseStack();
             pose.pushPose();
             pose.translate(pos.getX() - cam.x, pos.getY() - cam.y, pos.getZ() - cam.z);
@@ -98,7 +100,7 @@ public final class TvScreenLayer {
                 default -> { }
             }
             pose.translate(-0.5, 0.0, -0.5);
-            pose.translate(CENTER_X, CENTER_Y, FACE_Z);
+            pose.translate(screen.screenCenterX(), screen.screenCenterY(), screen.screenFaceZ());
 
             PoseStack.Pose last = pose.last();
             VertexConsumer vc = buffers.getBuffer(TvScreenRenderType.of(tex));
@@ -109,16 +111,17 @@ public final class TvScreenLayer {
             Core core = InWorldSession.core();
             int fw = core != null ? core.baseWidth() : InWorldSession.frameWidth();
             int fh = core != null ? core.baseHeight() : InWorldSession.frameHeight();
-            float hw = HALF_W, hh = HALF_H;
+            float maxHW = screen.screenHalfW(), maxHH = screen.screenHalfH();
+            float hw = maxHW, hh = maxHH;
             if (fw > 0 && fh > 0) {
-                double quadAspect = (2.0 * HALF_W) / (2.0 * HALF_H);
+                double quadAspect = (2.0 * maxHW) / (2.0 * maxHH);
                 double texAspect = (double) fw / fh;
                 if (texAspect >= quadAspect) {
-                    hw = HALF_W;
-                    hh = (float) (HALF_W / texAspect);
+                    hw = maxHW;
+                    hh = (float) (maxHW / texAspect);
                 } else {
-                    hh = HALF_H;
-                    hw = (float) (HALF_H * texAspect);
+                    hh = maxHH;
+                    hw = (float) (maxHH * texAspect);
                 }
             }
             {
@@ -130,6 +133,7 @@ public final class TvScreenLayer {
             }
             float x0 = -hw, x1 = hw;
             float y0 = -hh, y1 = hh;
+            // 画面是**发光体**：不随环境变暗，固定全亮（屏幕自己就是光源）
             int light = LightTexture.FULL_BRIGHT;
             int overlay = OverlayTexture.NO_OVERLAY;
 

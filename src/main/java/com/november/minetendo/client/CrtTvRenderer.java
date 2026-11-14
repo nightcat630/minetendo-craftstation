@@ -54,6 +54,7 @@ public class CrtTvRenderer implements BlockEntityRenderer<CrtTvBlockEntity> {
         float x0 = -HALF_W, x1 = HALF_W;
         float y0 = -HALF_H, y1 = HALF_H;
 
+        // 画面是发光体，固定全亮
         final int light = net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
         vertex(vc, last, x0, y0, 1f, 1f, light);
         vertex(vc, last, x1, y0, 0f, 1f, light);

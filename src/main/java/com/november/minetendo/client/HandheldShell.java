@@ -308,7 +308,7 @@ public final class HandheldShell {
                     "Enter = START",
                     "Tab = SELECT",
                     "Q / E = L / R",
-                    "J/K/L/I = 右摇杆",
+                    "小键盘 2/4/6/8 = 右摇杆",
                     "",
                     "ESC = 存档退出",
                     "退格 = 删档回选单",
@@ -483,10 +483,10 @@ public final class HandheldShell {
         int faceCy = b.y() + (int) (b.h() * PSP_FACE_Y);
         int r = Math.max(9, (int) (b.h() * 0.062f));
         int d = (int) Math.round(r * 1.65);
-        boolean tri = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_G);
-        boolean cir = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_Y);
-        boolean cro = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_T);
-        boolean squ = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_H);
+        boolean tri = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_L);   // △ = L
+        boolean cir = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_J);   // ○ = J
+        boolean cro = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_K);   // × = K
+        boolean squ = held.contains(org.lwjgl.glfw.GLFW.GLFW_KEY_I);   // □ = I
         circle(g, faceCx, faceCy - d, r, tri ? 0xFF4A4E55 : 0xFF2C3036);
         circle(g, faceCx + d, faceCy, r, cir ? 0xFF4A4E55 : 0xFF2C3036);
         circle(g, faceCx, faceCy + d, r, cro ? 0xFF4A4E55 : 0xFF2C3036);

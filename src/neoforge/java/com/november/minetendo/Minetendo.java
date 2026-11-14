@@ -44,6 +44,8 @@ public final class Minetendo {
                         output.accept(com.november.minetendo.client.CrtTvRegistry.PS2_CONSOLE_ITEM.get());
                         output.accept(com.november.minetendo.client.CrtTvRegistry.PSP_CONSOLE_ITEM.get());
                         output.accept(com.november.minetendo.client.CrtTvRegistry.TV_ITEM.get());
+                output.accept(com.november.minetendo.client.CrtTvRegistry.LCD_TV_ITEM.get());
+                output.accept(com.november.minetendo.client.CrtTvRegistry.GAMEPAD.get());
                     })
                     .build());
 

@@ -12,6 +12,16 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class ClientTicker {
     private ClientTicker() {}
     @SubscribeEvent
+    public static void onInteractionKey(net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+        GamepadMode.onInteractionKey(event);
+    }
+
+    @SubscribeEvent
+    public static void onMouse(net.neoforged.neoforge.client.event.InputEvent.MouseButton.Pre event) {
+        GamepadMode.onMouseButton(event);
+    }
+
+    @SubscribeEvent
     public static void onTick(ClientTickEvent.Post event) {
         InWorldSession.tick();
         // 联机电视流：宿主推流 / 观战端解码上传 / 超时清理
@@ -19,6 +29,9 @@ public final class ClientTicker {
         TvStreamClient.pump();
         TvStreamClient.keepAlive();
         TvSeats.tick();
+        // 手柄操作模式：切物品/开界面自动断开；并清空原版按键队列（保证我们的优先级）
+        GamepadMode.tick();
+        GamepadMode.drainVanillaKeys();
         if (net.minecraft.client.Minecraft.getInstance().level == null) TvSeats.clear();
         if (net.minecraft.client.Minecraft.getInstance().level == null) {
             TvStreamClient.clear();

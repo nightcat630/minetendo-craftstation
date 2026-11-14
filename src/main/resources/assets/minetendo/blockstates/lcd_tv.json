@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "minetendo:block/lcd_tv", "y": 180 },
+    "facing=east":  { "model": "minetendo:block/lcd_tv", "y": 270 },
+    "facing=south": { "model": "minetendo:block/lcd_tv", "y": 0 },
+    "facing=west":  { "model": "minetendo:block/lcd_tv", "y": 90 }
+  }
+}

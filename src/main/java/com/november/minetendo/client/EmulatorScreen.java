@@ -279,15 +279,11 @@ public class EmulatorScreen extends Screen {
                 case GLFW.GLFW_KEY_LEFT -> b |= 1 << BTN_LEFT;
                 case GLFW.GLFW_KEY_RIGHT -> b |= 1 << BTN_RIGHT;
                 // PSP：△=G □=H ×=T ○=Y；其他机种保持 K=A J=B I=X L=Y
-                case GLFW.GLFW_KEY_G -> b |= 1 << BTN_X;      // △
-                case GLFW.GLFW_KEY_H -> b |= 1 << BTN_Y;      // □
-                case GLFW.GLFW_KEY_T -> b |= 1 << BTN_B;      // ×
-                case GLFW.GLFW_KEY_Y -> b |= 1 << BTN_A;      // ○
-                // PSP 不用 K/J/I/L 面键（它们是右摇杆），只有非 PSP 才映射
-                case GLFW.GLFW_KEY_K -> { if (core != Core.PSP) b |= 1 << (core == Core.PS2 ? BTN_B : BTN_A); }
-                case GLFW.GLFW_KEY_J -> { if (core != Core.PSP) b |= 1 << (core == Core.PS2 ? BTN_A : BTN_B); }
-                case GLFW.GLFW_KEY_I -> { if (core != Core.PSP) b |= 1 << BTN_X; }
-                case GLFW.GLFW_KEY_L -> { if (core != Core.PSP) b |= 1 << BTN_Y; }
+                // PSP 面键沿用之前那版：K=× J=○ I=□ L=△（避免和聊天键 T 冲突）
+                case GLFW.GLFW_KEY_K -> b |= 1 << (core == Core.PS2 ? BTN_B : BTN_A);   // PSP ×
+                case GLFW.GLFW_KEY_J -> b |= 1 << (core == Core.PS2 ? BTN_A : BTN_B);   // PSP ○
+                case GLFW.GLFW_KEY_I -> b |= 1 << BTN_X;                                  // PSP □
+                case GLFW.GLFW_KEY_L -> b |= 1 << BTN_Y;                                  // PSP △
                 case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> b |= 1 << BTN_START;
                 case GLFW.GLFW_KEY_TAB, GLFW.GLFW_KEY_RIGHT_SHIFT -> b |= 1 << BTN_SELECT;
                 case GLFW.GLFW_KEY_Q -> b |= 1 << BTN_L;
@@ -298,18 +294,18 @@ public class EmulatorScreen extends Screen {
         return b;
     }
 
-    /** 右摇杆：J=左 K=下 L=右 I=上（PSP 双摇杆） */
+    /** 右摇杆：小键盘 4=左 6=右 8=上 2=下（面键已占用 K/J/I/L） */
     private int axisX2() {
         int v = 0;
-        if (held.contains(GLFW.GLFW_KEY_J)) v -= 32767;
-        if (held.contains(GLFW.GLFW_KEY_L)) v += 32767;
+        if (held.contains(GLFW.GLFW_KEY_KP_4)) v -= 32767;
+        if (held.contains(GLFW.GLFW_KEY_KP_6)) v += 32767;
         return v;
     }
 
     private int axisY2() {
         int v = 0;
-        if (held.contains(GLFW.GLFW_KEY_I)) v -= 32767;
-        if (held.contains(GLFW.GLFW_KEY_K)) v += 32767;
+        if (held.contains(GLFW.GLFW_KEY_KP_8)) v -= 32767;
+        if (held.contains(GLFW.GLFW_KEY_KP_2)) v += 32767;
         return v;
     }
 

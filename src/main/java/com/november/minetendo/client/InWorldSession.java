@@ -270,19 +270,19 @@ public final class InWorldSession {
         if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT)) { b |= 1 << 7; x += 32767; }
         // PSP：△=G □=H ×=T ○=Y，右摇杆 J/K/L/I；其它机种 K=A J=B I=X L=Y（PS2 为 ○ 确认）
         if (core == Core.PSP) {
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_G)) b |= 1 << 9;   // △
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_H)) b |= 1 << 1;   // □
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_T)) b |= 1 << 0;   // ×
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_Y)) b |= 1 << 8;   // ○
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_L)) b |= 1 << 9;   // △
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_I)) b |= 1 << 1;   // □
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_K)) b |= 1 << 0;   // ×
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_J)) b |= 1 << 8;   // ○
             if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER) || down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)) b |= 1 << 3;
             if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_TAB) || down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT)) b |= 1 << 2;
             if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_Q)) b |= 1 << 10;
             if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_E)) b |= 1 << 11;
             int rx = 0, ry = 0;
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_J)) rx -= 32767;
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_L)) rx += 32767;
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_I)) ry -= 32767;
-            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_K)) ry += 32767;
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_KP_4)) rx -= 32767;
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_KP_6)) rx += 32767;
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_KP_8)) ry -= 32767;
+            if (down(win, org.lwjgl.glfw.GLFW.GLFW_KEY_KP_2)) ry += 32767;
             session.setInput(b, x, y, rx, ry);
             return;
         }

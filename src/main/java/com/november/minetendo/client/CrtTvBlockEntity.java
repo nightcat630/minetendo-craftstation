@@ -9,7 +9,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public class CrtTvBlockEntity extends BlockEntity {
 
     public CrtTvBlockEntity(BlockPos pos, BlockState state) {
-        super(CrtTvRegistry.TV_BE.get(), pos, state);
+        super(state.getBlock() instanceof LcdTvBlock
+                ? CrtTvRegistry.LCD_TV_BE.get()
+                : CrtTvRegistry.TV_BE.get(), pos, state);
     }
 
     @Override
