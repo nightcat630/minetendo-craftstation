@@ -26,7 +26,10 @@ import org.lwjgl.opengl.GL11;
  */
 public final class SessionHost {
 
-    private static final String RESOURCE = "/minetendo/native/windows-x86_64/minetendo.dll";
+    /** 宿主库随平台切换：windows-x86_64/minetendo.dll 或 linux-x86_64/libminetendo.so */
+    private static final String RESOURCE =
+            "/minetendo/native/" + com.november.minetendo.common.Platform.nativeDir()
+                    + "/" + com.november.minetendo.common.Platform.hostLibName();
     /** 目标帧率：3DS 原生 60，但宿主呈现链路（回读+上传）撑不住，先锁 30 */
     private static final int TARGET_FPS = 60;
     public static final int MAX_W = 1024;
@@ -70,7 +73,10 @@ public final class SessionHost {
 
     public static synchronized boolean load() {
         if (loaded) return true;
-        if (!System.getProperty("os.name", "").toLowerCase().contains("win")) return false;
+        if (!com.november.minetendo.common.Platform.supported()) {
+            System.out.println("[Minetendo] 当前平台不支持模拟层：" + com.november.minetendo.common.Platform.describe());
+            return false;
+        }
         try (InputStream in = SessionHost.class.getResourceAsStream(RESOURCE)) {
             if (in == null) return false;
             byte[] bytes = in.readAllBytes();
@@ -86,21 +92,31 @@ public final class SessionHost {
             } catch (Throwable t) {
                 hash = Integer.toString(bytes.length);
             }
-            Path dll = dir.resolve("minetendo_host_" + hash + ".dll");
+            Path dll = dir.resolve("minetendo_host_" + hash + com.november.minetendo.common.Platform.libExt());
             if (!Files.isRegularFile(dll)) {
                 Files.copy(new java.io.ByteArrayInputStream(bytes), dll, StandardCopyOption.REPLACE_EXISTING);
             }
             System.load(dll.toAbsolutePath().toString());
             loaded = true;
+            lastLoadError = "";
             return true;
         } catch (Throwable t) {
-            t.printStackTrace();
+            lastLoadError = "原生宿主加载失败（" + com.november.minetendo.common.Platform.describe()
+                    + "）：" + t;
+            System.out.println("[Minetendo] " + lastLoadError);
             return false;
         }
     }
 
     public static boolean available() {
         return loaded;
+    }
+
+    /** 上一次 load() 的失败原因（UI 直接显示给玩家） */
+    private static String lastLoadError = "";
+
+    public static String lastLoadError() {
+        return lastLoadError;
     }
 
     /** 打开会话：立刻返回，后台线程负责创建与逐帧推进。 */
@@ -304,6 +320,19 @@ public final class SessionHost {
         }
     }
 
+    /** 在同一会话里换内容（不重建上下文、不重 init）。DOS 换游戏必须走这条。 */
+    public boolean reload(java.nio.file.Path game) {
+        long tk = token;
+        if (tk == 0L) return false;
+        try {
+            return nativeReloadGame(tk, game.toAbsolutePath().toString());
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static native boolean nativeReloadGame(long token, String gamePath);
+
     /** 即时存档（核心支持 retro_serialize 时有效；3DS 的 Azahar 不支持）。 */
     public boolean saveState(java.nio.file.Path file) {
         long tk = token;
@@ -408,4 +437,11 @@ public final class SessionHost {
     private static native void destroy(long token);
     private static native void setInput(long token, int buttons, int axisX, int axisY, int axisX2, int axisY2);
     private static native void setPointer(long token, int x, int y, boolean down);
+
+    /** 键盘事件（DOS 类核心用）：RETROK_* 键码，down=true 按下。 */
+    public void key(int retroKey, boolean down) {
+        nativeKey(token, retroKey, down);
+    }
+
+    private static native void nativeKey(long token, int retroKey, boolean down);
 }

@@ -18,6 +18,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import com.november.minetendo.common.*;
 
 /**
  * 客户端 ROM 库：本机目录扫描 + 服务端清单元数据 + 下载组装。

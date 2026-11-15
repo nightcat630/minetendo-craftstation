@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

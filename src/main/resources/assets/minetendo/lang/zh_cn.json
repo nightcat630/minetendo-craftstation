@@ -6,6 +6,7 @@
 
   "item.minetendo.gamepad": "游戏手柄",
   "item.minetendo.gamepad.desc": "手持右键进入操作模式，才能控制电视上的游戏；再右键或切换物品退出。",
+  "block.minetendo.rpg_console": "RPG 主机",
   "block.minetendo.lcd_tv": "液晶电视",
   "item.minetendo.lcd_tv": "液晶电视",
   "item.minetendo.lcd_tv.desc": "横向平板液晶电视（4×3 格）。配 PS2 这类家用机；右键主机开机。",

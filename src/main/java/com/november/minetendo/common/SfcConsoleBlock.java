@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -45,15 +45,14 @@ public class SfcConsoleBlock extends Block {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                Player player, BlockHitResult hit) {
         if (level.isClientSide) {
-            var tv = InWorldSession.activateFromConsole(pos, state.getValue(FACING));
+            var tv = com.november.minetendo.client.ClientUi.findTv(pos, state.getValue(FACING));
             if (tv == null) {
-                // 规定：主机必须投屏到电视；周围没有电视就不让开局，只在物品栏上方提示
                 player.displayClientMessage(
                         net.minecraft.network.chat.Component.literal("周围没有可用电视（4 格内需要摆一台 CRT 电视）")
                                 .withStyle(net.minecraft.ChatFormatting.RED), true);
                 return InteractionResult.SUCCESS;
             }
-            net.minecraft.client.Minecraft.getInstance().setScreen(new RomPickerScreen(Core.SFC, null, true));
+            com.november.minetendo.client.ClientUi.openPicker(Core.SFC, null, true);
         } else if (level instanceof net.minecraft.server.level.ServerLevel sl) {
             SfcSeating.sit(sl, pos, player);
         }

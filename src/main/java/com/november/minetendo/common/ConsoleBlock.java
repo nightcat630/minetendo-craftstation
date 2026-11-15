@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -72,26 +72,8 @@ public class ConsoleBlock extends HorizontalDirectionalBlock {
                                                Player player, BlockHitResult hit) {
         if (!level.isClientSide) return InteractionResult.SUCCESS;
 
-        // 席位：先向服务器申请这台机器的操作席，拿到才允许开
-        final Direction facingNow = state.getValue(FACING);
-        TvSeats.requestControl(pos, () -> {
-            if (core == Core.SFC || core == Core.GBA || core == Core.PS2 || core == Core.PSP) {
-                var tv = InWorldSession.activateFromConsole(pos, facingNow);
-                if (tv == null) {
-                    player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("周围没有可用电视（4 格内需要摆一台 CRT 电视）")
-                                    .withStyle(net.minecraft.ChatFormatting.RED), true);
-                    TvSeats.release(pos);
-                    return;
-                }
-                net.minecraft.client.Minecraft.getInstance()
-                        .setScreen(new RomPickerScreen(core, null, true, pos));
-            } else {
-                // NDS / 3DS：不投屏，直接全屏
-                net.minecraft.client.Minecraft.getInstance()
-                        .setScreen(new RomPickerScreen(core, null, false, pos));
-            }
-        });
+        // 席位与界面都在客户端（ClientUi），服务端这里只回成功
+        com.november.minetendo.client.ClientUi.openConsole(core, pos, state.getValue(FACING), player);
         return InteractionResult.SUCCESS;
     }
 

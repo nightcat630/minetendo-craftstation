@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import com.november.minetendo.common.*;
 
 /**
  * 世界内会话（第一版）：核心在后台跑，画面贴到 CRT 电视上。
@@ -29,6 +30,14 @@ public final class InWorldSession {
     private static net.minecraft.core.BlockPos lastConsole;
     private static DynamicTexture texture;
     private static Core core;
+    /** 挂起标记：挂起时只停止步进，会话本身保留（DOS 不能重复 init） */
+    private static boolean suspended;
+    public static boolean suspended() { return suspended; }
+    public static void suspend() { suspended = true; }
+    public static void resume() { suspended = false; }
+
+    /** 当前会话载入的 ROM（用于幂等启动判断） */
+    private static java.nio.file.Path currentRom;
     private static String error = "";
     /** 已登记的电视位置（由 CrtTvBlockEntity 登记/注销） */
     private static final java.util.Set<net.minecraft.core.BlockPos> TVS =
@@ -138,6 +147,12 @@ public final class InWorldSession {
     private InWorldSession() {}
 
     /** 当前会话（供推流等内部使用）。 */
+    /** 手机（mcphone）里的会话：输入不受"手柄操作模式"限制 */
+    private static boolean phoneMode;
+    public static void setPhoneMode(boolean on) { phoneMode = on; }
+    public static boolean phoneMode() { return phoneMode; }
+    /** DOS 键盘边沿检测：GLFW 键码 → 上次是否按下 */
+
     public static SessionHost session() { return session; }
 
     public static boolean running() { return session != null && session.ready() && !session.failed(); }
@@ -146,13 +161,25 @@ public final class InWorldSession {
     public static Core core() { return core; }
 
     public static boolean start(Core targetCore, Path rom) {
+        // 幂等：同核心 + 同 ROM 已在跑 → 复用，不再新建会话
+        // （重复 retro_init 的核心会重建上下文，实测会把渲染线程拖死）
+        if (session != null && !session.failed() && core == targetCore) {
+            if (rom != null && rom.equals(currentRom)) return true;   // 同一局：直接复用
+            // 同核心换游戏：走会话内换内容（reload），不重建会话
+            if (rom != null && session.reload(rom)) {
+                currentRom = rom;
+                error = "";
+                LOG.info("[Minetendo] 会话内换内容：{}", rom.getFileName());
+                return true;
+            }
+        }
         // stop() 会清掉 activeTv；先记住再恢复，否则选完游戏没有任何电视被激活（只有声音）
         net.minecraft.core.BlockPos keepTv = activeTv;
         stop();
         activeTv = keepTv;
         if (!SessionHost.load()) { error = "原生库加载失败"; return false; }
         Path base = FMLPaths.GAMEDIR.get().resolve("minetendo").resolve(targetCore.dir);
-        Path corePath = base.resolve("core").resolve(targetCore.coreDll);
+        Path corePath = base.resolve("core").resolve(targetCore.fileName());
         Path sys = base.resolve("sysdata");
         if (!Files.isRegularFile(corePath)) { error = "缺少核心：" + corePath; return false; }
         if (rom == null || !Files.isRegularFile(rom)) { error = "游戏文件不存在：" + rom; return false; }
@@ -161,6 +188,7 @@ public final class InWorldSession {
         session = SessionHost.open(corePath, rom, sys);
         if (session == null) { error = "会话启动失败：" + SessionHost.lastError(); return false; }
         core = targetCore;
+        currentRom = rom;
         error = "";
 
         texture = new DynamicTexture(256, 224, false);
@@ -170,6 +198,7 @@ public final class InWorldSession {
         var mc0 = Minecraft.getInstance();
         if (mc0.player != null) {
             String hint = switch (targetCore) {
+                case RPG -> "RPG Maker：方向键移动  K/Enter 决定  J 取消  退格=停止";
                 case PS2 -> "PS2：K=× 确认  J=○ 取消  I=□  L=△  Enter=START  Tab=SELECT  退格=停止";
                 case SFC, GBA -> "K=A  J=B  I=X  L=Y  Enter=START  Tab=SELECT  退格=停止";
                 default -> "方向键=十字键  Enter=START  Tab=SELECT  退格=停止";
@@ -183,6 +212,7 @@ public final class InWorldSession {
 
     public static void tick() {
         if (session == null) return;
+        if (suspended) return;
         if (session.failed()) { LOG.warn("[Minetendo] 会话异常：{}", session.failure()); stop(); return; }
         if (!session.ready()) return;
 
@@ -256,9 +286,16 @@ public final class InWorldSession {
         if (session == null) return;
         var mc = Minecraft.getInstance();
         long win = mc.getWindow().getWindow();
+
+        // 退格键 = 停止会话：无条件优先，不受手柄模式影响
         if (org.lwjgl.glfw.GLFW.glfwGetKey(win, org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
             LOG.info("[Minetendo] 退格键：停止世界内会话");
             stop();
+            return;
+        }
+        // 没有手柄操作模式（也不是手机会话）→ 电视收不到任何输入
+        if (!GamepadMode.active() && !phoneMode) {
+            session.setInput(0, 0, 0, 0, 0);
             return;
         }
         int b = 0;
@@ -309,6 +346,9 @@ public final class InWorldSession {
     }
 
     public static void stop() {
+        phoneMode = false;
+        suspended = false;
+        currentRom = null;
         if (session != null) { session.close(); session = null; }
         if (audioInstance != null) { audioInstance.stop(); audioInstance = null; }
         if (texture != null) {

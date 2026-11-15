@@ -73,6 +73,47 @@ PSP 是**双摇杆**：左摇杆 WASD，右摇杆 J/K/L/I，面键 △□×○ =
 
 ---
 
+## 配方
+
+两套并行配方，互不冲突：
+
+- **工作台配方**：不依赖任何前置，装了这个模组就能造（电视、六台主机、手柄）
+- **机械动力配方**：装了 [Create](https://modrinth.com/mod/create) 才会出现 —— 用**动力合成器**整机成型、用**装配线**流水生产；没装 Create 时这些配方不加载，不会报错
+
+完整配方表见 [docs/RECIPES.md](docs/RECIPES.md)。
+
+---
+
+## 平台支持
+
+| 平台 | 状态 | 说明 |
+|---|---|---|
+| Windows x86_64 | ✅ 完整 | jar 里自带 `native/windows-x86_64/*.dll`（宿主 + 六机种核心），开箱即用 |
+| Linux x86_64 | ⚠️ 半自动 | jar 里已自带 **全部 libretro 核心 `.so`**（98MB）；**宿主 `libminetendo.so` 需要用脚本自己编一次**（见下） |
+| macOS | ❌ | 没做原生宿主 |
+
+Linux 补宿主：
+
+```bash
+sudo apt install build-essential libegl1-mesa-dev libgl1-mesa-dev
+cd src/native/linux
+JAVA_HOME=/path/to/jdk21 ./build-linux.sh
+# 产物自动拷到 src/main/resources/minetendo/native/linux-x86_64/libminetendo.so
+```
+
+Linux 版宿主用 **EGL surfaceless**（不需要 X11，服务器/无头也能跑），
+并且**拒绝硬件渲染核心**，让它们退回软件渲染；PS2 本来就走 `pcsx2_renderer=Software`。
+没有 PBO 回读，PS2/PSP 在 Linux 上会比 Windows 慢一些。
+
+缺宿主时的表现：界面提示「原生宿主加载失败（linux-x86_64）：…」，不会崩。
+
+## 服务端 / ROM 分发
+
+服主请读 [docs/SERVER-ROM.md](docs/SERVER-ROM.md)：
+`server-roms/` 目录结构、按需分片下载流程、带宽建议、以及**放什么文件由服主自己负责**的说明。
+
+---
+
 ## 安装
 
 1. 装 **NeoForge 21.1.200+**（Minecraft 1.21.1）

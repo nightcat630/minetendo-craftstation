@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
+import com.november.minetendo.common.*;
 
 /**
  * 把模拟器画面贴到 CRT 屏幕上 —— 与 1.20 的 {@code CrtTvRenderer} 相同常量与画法。

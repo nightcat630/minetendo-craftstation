@@ -35,17 +35,17 @@ public final class Minetendo {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB =
             TABS.register("main", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.minetendo"))
-                    .icon(() -> com.november.minetendo.client.CrtTvRegistry.NDS3_CONSOLE_ITEM.get().getDefaultInstance())
+                    .icon(() -> com.november.minetendo.common.CrtTvRegistry.NDS3_CONSOLE_ITEM.get().getDefaultInstance())
                     .displayItems((params, output) -> {
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.SFC_CONSOLE_ITEM.get());
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.GBA_CONSOLE_ITEM.get());
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.NDS_CONSOLE_ITEM.get());
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.NDS3_CONSOLE_ITEM.get());
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.PS2_CONSOLE_ITEM.get());
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.PSP_CONSOLE_ITEM.get());
-                        output.accept(com.november.minetendo.client.CrtTvRegistry.TV_ITEM.get());
-                output.accept(com.november.minetendo.client.CrtTvRegistry.LCD_TV_ITEM.get());
-                output.accept(com.november.minetendo.client.CrtTvRegistry.GAMEPAD.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.SFC_CONSOLE_ITEM.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.GBA_CONSOLE_ITEM.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.NDS_CONSOLE_ITEM.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.NDS3_CONSOLE_ITEM.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.PS2_CONSOLE_ITEM.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.PSP_CONSOLE_ITEM.get());
+                        output.accept(com.november.minetendo.common.CrtTvRegistry.TV_ITEM.get());
+                output.accept(com.november.minetendo.common.CrtTvRegistry.LCD_TV_ITEM.get());
+                output.accept(com.november.minetendo.common.CrtTvRegistry.GAMEPAD.get());
                     })
                     .build());
 
@@ -68,7 +68,7 @@ public final class Minetendo {
         modBus.addListener(com.november.minetendo.net.RomServerNet::register);
         modBus.addListener(com.november.minetendo.net.TvStreamNet::register);
         MinetendoItems.register(modBus);
-        com.november.minetendo.client.CrtTvRegistry.register(modBus);
+        com.november.minetendo.common.CrtTvRegistry.register(modBus);
         // 服务端 tick：清理过期操作席（与客户端无关，所有环境都挂）
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(com.november.minetendo.net.SeatServerTicker::onTick);
         // 电视投屏：手动挂到游戏事件总线（RenderLevelStageEvent 属于游戏总线）

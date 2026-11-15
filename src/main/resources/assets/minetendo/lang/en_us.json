@@ -6,6 +6,7 @@
 
   "item.minetendo.gamepad": "Gamepad",
   "item.minetendo.gamepad.desc": "Right-click while holding to control the game on a TV. Right-click again or switch items to stop.",
+  "block.minetendo.rpg_console": "RPG Console",
   "block.minetendo.lcd_tv": "LCD TV",
   "item.minetendo.lcd_tv": "LCD TV",
   "item.minetendo.lcd_tv.desc": "Horizontal flat-panel LCD TV (4x3 blocks) for home consoles.",

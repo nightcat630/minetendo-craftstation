@@ -1,0 +1,32 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "create:mechanical_crafting",
+  "pattern": [
+    "ABA",
+    "CTC",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "item": "create:sturdy_sheet"
+    },
+    "B": {
+      "item": "create:brass_sheet"
+    },
+    "C": {
+      "item": "create:copper_sheet"
+    },
+    "T": {
+      "item": "create:precision_mechanism"
+    }
+  },
+  "result": {
+    "id": "minetendo:ps2"
+  },
+  "accept_mirrored": false
+}

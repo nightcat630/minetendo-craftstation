@@ -18,6 +18,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import com.november.minetendo.Minetendo;
 import net.neoforged.api.distmarker.Dist;
+import com.november.minetendo.common.*;
 
 /**
  * 电视投屏渲染 —— 照搬参考项目的方式：

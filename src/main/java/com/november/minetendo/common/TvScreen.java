@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 /**
  * 电视屏幕在模型空间里的矩形（方块坐标，1 = 一格）。

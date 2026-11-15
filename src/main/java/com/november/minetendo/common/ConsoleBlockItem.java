@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
@@ -45,7 +45,7 @@ public class ConsoleBlockItem extends BlockItem {
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
         if (level.isClientSide) {
-            Minecraft.getInstance().setScreen(new RomPickerScreen(core, null, false));
+            com.november.minetendo.client.ClientUi.openPicker(core, null, false);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
@@ -62,7 +62,7 @@ public class ConsoleBlockItem extends BlockItem {
                 return net.minecraft.world.InteractionResult.sidedSuccess(context.getLevel().isClientSide);
             }
             if (context.getLevel().isClientSide) {
-                Minecraft.getInstance().setScreen(new RomPickerScreen(core, null, false));
+                com.november.minetendo.client.ClientUi.openPicker(core, null, false);
             }
             return net.minecraft.world.InteractionResult.sidedSuccess(context.getLevel().isClientSide);
         }

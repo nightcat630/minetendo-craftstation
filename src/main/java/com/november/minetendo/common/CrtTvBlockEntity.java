@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -17,12 +17,14 @@ public class CrtTvBlockEntity extends BlockEntity {
     @Override
     public void setLevel(net.minecraft.world.level.Level level) {
         super.setLevel(level);
-        if (level != null && level.isClientSide) InWorldSession.registerTv(getBlockPos());
+        if (level != null && level.isClientSide) {
+            com.november.minetendo.client.ClientUi.registerTv(getBlockPos());
+        }
     }
 
     @Override
     public void setRemoved() {
-        InWorldSession.unregisterTv(getBlockPos());
+        com.november.minetendo.client.ClientUi.unregisterTv(getBlockPos());
         super.setRemoved();
     }
 }

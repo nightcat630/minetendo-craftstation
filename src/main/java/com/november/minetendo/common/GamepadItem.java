@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -29,7 +29,7 @@ public class GamepadItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide) {
-            boolean now = GamepadMode.toggle(player);
+            boolean now = com.november.minetendo.client.ClientUi.toggleGamepad(player);
             player.displayClientMessage(
                     Component.literal(now
                                     ? "手柄已连接：现在可以操作电视上的游戏（再按右键断开）"

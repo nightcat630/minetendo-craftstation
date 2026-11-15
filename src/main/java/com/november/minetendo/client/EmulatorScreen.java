@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import com.november.minetendo.common.*;
 
 /** 全屏模拟器界面（所有机种共用）。 */
 public class EmulatorScreen extends Screen {
@@ -75,7 +76,7 @@ public class EmulatorScreen extends Screen {
             return;
         }
         Path base = FMLPaths.GAMEDIR.get().resolve("minetendo").resolve(core.dir);
-        Path corePath = base.resolve("core").resolve(core.coreDll);
+        Path corePath = base.resolve("core").resolve(core.fileName());
         Path sys = base.resolve("sysdata");
         if (!Files.isRegularFile(corePath)) {
             error = "缺少核心：" + corePath;

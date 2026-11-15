@@ -13,6 +13,7 @@ import org.lwjgl.glfw.GLFW;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import com.november.minetendo.common.*;
 
 /**
  * 选游戏界面（重做版）。
@@ -59,7 +60,13 @@ public class RomPickerScreen extends Screen {
     private int listX, listY, listW, listH;
     private int detailX, detailY, detailW, detailH;
 
-    private Button btnStart, btnDownload, btnRefresh, btnClose, btnDetail;
+    private Button btnStart, btnDownload, btnRefresh, btnClose, btnDetail, btnDelete;
+
+    /** 删除确认：第一次点"删除"进入确认态，4 秒内再点一次才真删（防止误删 ROM） */
+    private boolean confirmDelete;
+    private long confirmDeadline;
+    /** 删除操作的反馈（显示在详情面板底部） */
+    private String deleteStatus = "";
     private boolean decRunning;
     private int dirSignature = -1;
     private int tickCount;
@@ -131,6 +138,8 @@ public class RomPickerScreen extends Screen {
                 .bounds(width / 2 + 118, y, 60, 20).build());
         btnDetail = addRenderableWidget(Button.builder(Component.literal("详情…"), b -> openDetail())
                 .bounds(detailX + detailW - 70, detailY + detailH - 26, 62, 18).build());
+        btnDelete = addRenderableWidget(Button.builder(Component.literal("删除"), b -> deleteSelected())
+                .bounds(detailX + 6, detailY + detailH - 26, 56, 18).build());
         updateButtons();
     }
 
@@ -143,6 +152,12 @@ public class RomPickerScreen extends Screen {
         if (btnDownload != null) btnDownload.active = hasSel && !downloading
                 && source == RomLibrary.Source.SERVER && e != null && !e.availableLocal;
         if (btnDetail != null) btnDetail.active = hasSel;
+        if (btnDelete != null) {
+            boolean deletable = hasSel && source == RomLibrary.Source.LOCAL && e != null
+                    && Files.isRegularFile(romsDir(core).resolve(e.name));
+            btnDelete.active = deletable;
+            btnDelete.setMessage(Component.literal(confirmDelete ? "确认删除" : "删除"));
+        }
     }
 
     private void reload() {
@@ -198,6 +213,48 @@ public class RomPickerScreen extends Screen {
         status = "开始下载 " + e.name;
     }
 
+    /** 删除本地 ROM：点一次进入确认态，再点一次才真删。 */
+    private void deleteSelected() {
+        List<RomLibrary.Entry> list = entries();
+        if (list.isEmpty() || selected < 0 || selected >= list.size()) return;
+        if (source != RomLibrary.Source.LOCAL) { deleteStatus = "只能删除本机 ROM"; return; }
+        RomLibrary.Entry e = list.get(selected);
+        Path file = romsDir(core).resolve(e.name);
+        if (!Files.isRegularFile(file)) { deleteStatus = "文件已不存在: " + e.name; reload(); return; }
+
+        long now = System.currentTimeMillis();
+        if (!confirmDelete || now > confirmDeadline) {
+            confirmDelete = true;
+            confirmDeadline = now + 4000;
+            deleteStatus = "再点一次删除「" + e.name + "」（4 秒内有效）";
+            updateButtons();
+            return;
+        }
+        // 第二次点击 → 真删
+        try {
+            Files.delete(file);
+            boolean withSaves = Screen.hasShiftDown();
+            if (withSaves) deleteSaves(e.name);
+            deleteStatus = "已删除 " + e.name + (withSaves ? "（含存档）" : "");
+        } catch (Exception ex) {
+            deleteStatus = "删除失败: " + ex.getMessage();
+        }
+        confirmDelete = false;
+        reload();
+    }
+
+    /** 删除该 ROM 的存档/快照（可选，用户按住 Shift 删除时触发） */
+    private void deleteSaves(String romName) {
+        Path savesDir = FMLPaths.GAMEDIR.get().resolve("minetendo").resolve(core.dir).resolve("saves");
+        if (!Files.isDirectory(savesDir)) return;
+        String base = romName.replaceAll("\\.[^.]+$", "");
+        try (var s = Files.list(savesDir)) {
+            s.filter(p -> p.getFileName().toString().startsWith(base)).forEach(p -> {
+                try { Files.deleteIfExists(p); } catch (Exception ignored) {}
+            });
+        } catch (Exception ignored) {}
+    }
+
     private void openDetail() {
         List<RomLibrary.Entry> list = entries();
         if (list.isEmpty()) return;
@@ -207,7 +264,12 @@ public class RomPickerScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if (core != Core.THREE_DS) return;
+        if (confirmDelete && System.currentTimeMillis() > confirmDeadline) {
+            confirmDelete = false;
+            deleteStatus = "";
+            updateButtons();
+        }
+        if (core != Core.THREE_DS) { updateButtons(); return; }
         tickCount++;
         boolean nowRunning = CiaDecryptor.running();
         if (decRunning && !nowRunning) reload();
@@ -481,8 +543,16 @@ public class RomPickerScreen extends Screen {
         }
 
         // 说明
-        g.drawString(font, source == RomLibrary.Source.LOCAL ? "Enter 开始游戏" : "双击下载 / 下载后开始",
-                detailX + 8, detailY + detailH - 12, 0x7C8C9C, false);
+        String hint = source == RomLibrary.Source.LOCAL
+                ? "Enter 开始 · Del 删除 ROM · Shift+Del 连存档一起删"
+                : "双击下载 / 下载后开始";
+        g.drawString(font, hint, detailX + 8, detailY + detailH - 12, 0x7C8C9C, false);
+        // 删除确认 / 结果提示
+        if (confirmDelete) {
+            g.drawString(font, "⚠ " + deleteStatus, detailX + 70, detailY + detailH - 21, 0xFF8A8A, false);
+        } else if (!deleteStatus.isEmpty()) {
+            g.drawString(font, deleteStatus, detailX + 70, detailY + detailH - 21, 0x9FD3A9, false);
+        }
     }
 
     private List<String> wrap(String text, int maxW) {
@@ -532,7 +602,11 @@ public class RomPickerScreen extends Screen {
             source = source == RomLibrary.Source.LOCAL ? RomLibrary.Source.SERVER : RomLibrary.Source.LOCAL;
             selected = 0; scroll = 0; reload(); return true;
         }
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) { onClose(); return true; }
+        if (keyCode == GLFW.GLFW_KEY_DELETE) { deleteSelected(); return true; }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            if (confirmDelete) { confirmDelete = false; deleteStatus = ""; updateButtons(); return true; }
+            onClose(); return true;
+        }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 

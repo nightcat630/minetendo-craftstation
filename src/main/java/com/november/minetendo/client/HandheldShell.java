@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.Set;
+import com.november.minetendo.common.*;
 
 /**
  * 掌机机身外观（**仅全屏界面的 GUI**，与方块模型无关）。

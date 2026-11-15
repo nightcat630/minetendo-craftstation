@@ -5,6 +5,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.event.InputEvent;
+import com.november.minetendo.common.*;
 
 /**
  * 手柄操作模式：决定"现在这一帧的键盘输入归电视还是归 Minecraft"。

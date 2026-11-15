@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package com.november.minetendo.client;
+package com.november.minetendo.common;
 
 import com.november.minetendo.Minetendo;
 import net.minecraft.core.registries.Registries;
@@ -57,6 +57,11 @@ public final class CrtTvRegistry {
             () -> new ConsoleBlock(Core.PSP, ConsoleBlock.flatShape(),
                     BlockBehaviour.Properties.of().strength(0.8f).sound(SoundType.STONE).noOcclusion()));
 
+    // RPG Maker 主机（EasyRPG）：跑 RPG Maker 2000/2003 游戏
+    public static final DeferredBlock<Block> RPG_CONSOLE = BLOCKS.register("rpg_console",
+            () -> new ConsoleBlock(Core.RPG, ConsoleBlock.flatShape(),
+                    BlockBehaviour.Properties.of().strength(1.0f).sound(SoundType.WOOD).noOcclusion()));
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrtTvBlockEntity>> TV_BE =
             BE_TYPES.register("crt_tv", () -> BlockEntityType.Builder.of(CrtTvBlockEntity::new, TV.get()).build(null));
 
@@ -77,6 +82,8 @@ public final class CrtTvRegistry {
     public static final DeferredHolder<Item, Item> NDS3_CONSOLE_ITEM =
             ITEMS.register("nds3_console", () -> new ConsoleBlockItem(NDS3_CONSOLE.get(), Core.THREE_DS, new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> RPG_CONSOLE_ITEM =
+            ITEMS.register("rpg_console", () -> new ConsoleBlockItem(RPG_CONSOLE.get(), Core.RPG, new Item.Properties()));
     public static final DeferredHolder<Item, Item> PS2_CONSOLE_ITEM =
             ITEMS.register("ps2", () -> new ConsoleBlockItem(PS2_CONSOLE.get(), Core.PS2, new Item.Properties()));
 

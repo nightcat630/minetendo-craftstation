@@ -2,6 +2,7 @@
 package com.november.minetendo.client;
 
 import net.minecraft.client.gui.GuiGraphics;
+import com.november.minetendo.common.*;
 
 /**
  * 掌机界面的"外观层"：配色、面板、提示文字。
@@ -30,6 +31,7 @@ public final class HandheldUi {
             case SFC -> 0xFFB03030;
             case PS2 -> 0xFF1F5FBF;   // PlayStation 蓝
             case PSP -> 0xFF2B2B33;   // PSP 黑
+            case RPG -> 0xFF6B4E2E;   // RPG Maker 木色
         };
     }
 
@@ -41,6 +43,7 @@ public final class HandheldUi {
             case SFC -> "SUPER FAMICOM";
             case PS2 -> "PLAYSTATION 2";
             case PSP -> "PLAYSTATION PORTABLE";
+            case RPG -> "RPG MAKER 2000 / 2003";
         };
     }
 
@@ -72,6 +75,7 @@ public final class HandheldUi {
             case SFC -> "方向键/WASD=十字键  K=A  J=B  I=X  L=Y  Enter=START  Tab=SELECT";
             case PS2 -> "方向键/WASD=十字键  K=×  J=○  I=□  L=△  Enter=START  Tab=SELECT  Q/E=L1/R1";
             case PSP -> "方向键=十字键  K=×  J=○  I=□  L=△  Enter=START  Tab=SELECT  Q/E=L/R";
+            case RPG -> "方向键=移动  K/Enter=决定  J/Esc=取消  I=快进  L=菜单";
         };
         String line = "ESC=存档退出    退格=删档回选单    +/-=音量 " + (int) (volume * 100) + "%"
                 + (extraInfo > 0 ? "    帧 " + extraInfo : "");

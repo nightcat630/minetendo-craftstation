@@ -139,3 +139,11 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(ProcessResources).configureEach {
     filteringCharset = 'UTF-8'
 }
+
+// ── mcphone 联动（可选）─────────────────────────────────────────────────
+//
+// 手机应用通过 ServiceLoader 被发现：我们只把接口打成 compileOnly，
+// 运行时不需要 mcphone 在场 —— 没有它时这个类永远不会被加载。
+dependencies {
+    compileOnly files('libs/mcphone-api.jar')
+}

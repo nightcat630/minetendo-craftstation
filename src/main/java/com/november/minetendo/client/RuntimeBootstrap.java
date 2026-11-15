@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import com.november.minetendo.common.*;
 
 /**
  * 首次启动自解包：让 mod 真正做到"把 jar 丢进 mods 就能玩"。
@@ -23,7 +24,7 @@ import java.nio.file.StandardCopyOption;
  */
 public final class RuntimeBootstrap {
 
-    private static final String NATIVE = "/minetendo/native/windows-x86_64/";
+    private static final String NATIVE = "/minetendo/native/" + Platform.nativeDir() + "/";
     private static final String BIOS = "/minetendo/bios/ps2/";
     private static final String PPSSPP_ASSETS = "/minetendo/ppsspp-assets/";
     private static boolean done;
@@ -42,9 +43,9 @@ public final class RuntimeBootstrap {
                 Files.createDirectories(base.resolve("sysdata"));
                 Files.createDirectories(base.resolve("core"));
                 // 核心：只拷缺失的
-                Path dll = base.resolve("core").resolve(core.coreDll);
+                Path dll = base.resolve("core").resolve(core.fileName());
                 if (!Files.isRegularFile(dll)) {
-                    copyResource(NATIVE + core.coreDll, dll);
+                    copyResource(NATIVE + core.fileName(), dll);
                 }
             }
             // NDS 用的是自研库（名字不同），单独处理
@@ -73,7 +74,8 @@ public final class RuntimeBootstrap {
                 if (!Files.isRegularFile(target)) copyResource(PPSSPP_ASSETS + name, target);
             }
 
-            System.out.println("[Minetendo] 运行环境已就绪: " + root);
+            System.out.println("[Minetendo] 运行环境已就绪: " + root
+                          + "（平台 " + Platform.describe() + "）");
         } catch (Throwable t) {
             System.out.println("[Minetendo] 首次解包失败: " + t);
         }

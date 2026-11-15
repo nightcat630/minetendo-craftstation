@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <deque>
 #include <memory>
 #include <map>
 #include <mutex>
@@ -35,10 +36,14 @@
 // ── libretro 最小声明（字段顺序必须严格一致）──
 #define RETRO_HW_FRAME_BUFFER_VALID ((const void*) (intptr_t) -1)
 enum { RETRO_PIXEL_FORMAT_0RGB1555 = 0, RETRO_PIXEL_FORMAT_XRGB8888 = 1, RETRO_PIXEL_FORMAT_RGB565 = 2 };
-enum { RETRO_DEVICE_NONE = 0, RETRO_DEVICE_JOYPAD = 1, RETRO_DEVICE_ANALOG = 5, RETRO_DEVICE_POINTER = 6 };
+enum { RETRO_DEVICE_NONE = 0, RETRO_DEVICE_JOYPAD = 1, RETRO_DEVICE_KEYBOARD = 3,
+       RETRO_DEVICE_ANALOG = 5, RETRO_DEVICE_POINTER = 6 };
 
 struct retro_game_info { const char* path; const void* data; size_t size; const char* meta; };
 struct retro_variable { const char* key; const char* value; };
+struct retro_keyboard_callback {
+    void (*callback)(bool down, unsigned keycode, uint32_t character, uint16_t key_modifiers);
+};
 struct retro_log_callback { void (*log)(int level, const char* fmt, ...); };
 struct retro_hw_render_callback {
     unsigned context_type;
@@ -142,9 +147,27 @@ static thread_local Session* t_invoking = nullptr;
 // 回调可能来自核心自己的渲染线程，thread_local 在那里是空的；
 // 用一个全局"当前会话"给所有回调定位（同一时刻只有一个会话在跑）。
 static std::atomic<Session*> g_activeSession{nullptr};
+// 存活会话表：输入类 JNI 只读这张表，**不碰槽位锁**。
+// 以前 setInput/setPointer/nativeKey 用 Access（try_lock 槽位）→ 每帧都在跑
+// retro_run，抢不到锁就把事件**静默丢掉**，表现就是"键盘鼠标全都不响应"。
+static std::mutex g_liveGuard;
+static std::map<jlong, std::shared_ptr<Session>> g_live;
+static std::shared_ptr<Session> liveSession(jlong token) {
+    std::lock_guard<std::mutex> lk(g_liveGuard);
+    auto it = g_live.find(token);
+    return it == g_live.end() ? nullptr : it->second;
+}
 // 创建会话前记录 MC 当前的 GL 上下文：新上下文与它共享纹理/FBO，
 // 这样核心渲染的纹理可以直接给 MC 使用，不必回读。
 static HGLRC g_mcContext = nullptr;
+static HDC   g_mcDc = nullptr;
+// 会话用完必须把 MC 的上下文绑回去：否则 MC 后续渲染落在会话上下文里，
+// 而 destroy 又会删掉当前绑定的上下文 —— 表现就是"第二次开游戏黑屏 + 卡死"。
+static void restoreMcContext() {
+    if (g_mcContext && wglGetCurrentContext() != g_mcContext) {
+        wglMakeCurrent(g_mcDc, g_mcContext);
+    }
+}
 // 微秒级计时（GetTickCount64 精度只有 15.6ms，量不了每帧分段）
 static long long nowUs() { LARGE_INTEGER f, c; QueryPerformanceFrequency(&f); QueryPerformanceCounter(&c);
     return (long long) (c.QuadPart * 1000000LL / f.QuadPart); }
@@ -185,6 +208,13 @@ struct Session {
     unsigned sampleRate = 32730;
     std::vector<uint8_t> pixels;         // RGBA 自上而下（读回后按需翻转）
     std::vector<int16_t> audio;
+    // keyboard (dosbox-pure class cores need it)
+    retro_keyboard_callback kb{};
+    bool hasKb = false;
+    std::mutex keyMutex;
+    struct KeyEv { unsigned code; bool down; };
+    std::deque<KeyEv> keyQueue;
+    std::set<unsigned> keysDown;
     std::mutex audioMutex;
     // 帧缓冲锁：工作线程写 pixels、渲染线程读它上传，必须互斥（否则画面滚动/撕裂）
     std::mutex frameMutex;
@@ -209,7 +239,11 @@ struct Session {
     ~Session() { release(); }
 
     void release() {
-        if (ctx) { wglMakeCurrent(nullptr, nullptr); wglDeleteContext(ctx); ctx = nullptr; }
+        if (ctx) {
+            if (wglGetCurrentContext() == ctx) wglMakeCurrent(nullptr, nullptr);
+            wglDeleteContext(ctx);
+            ctx = nullptr;
+        }
         if (dc && wnd) { ReleaseDC(wnd, dc); dc = nullptr; }
         if (wnd) { DestroyWindow(wnd); wnd = nullptr; }
         // 注意：**不 FreeLibrary**。换系统靠新会话，卸载旧核心正是崩溃根因。
@@ -307,6 +341,7 @@ static bool createContext(Session* s) {
     wc.hInstance = GetModuleHandleW(nullptr);
     wc.lpszClassName = s->wndClass.c_str();
     RegisterClassExW(&wc);
+    logLine("[createContext] 窗口类已注册，开始建窗口");
     s->wnd = CreateWindowExW(0, s->wndClass.c_str(), L"minetendo", WS_POPUP, 0, 0, 16, 16,
                              nullptr, nullptr, wc.hInstance, nullptr);
     if (!s->wnd) { fail("创建隐藏窗口失败"); return false; }
@@ -317,15 +352,18 @@ static bool createContext(Session* s) {
     p.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
     p.iPixelType = PFD_TYPE_RGBA;
     p.cColorBits = 32; p.cDepthBits = 24; p.cStencilBits = 8;
+    logLine("[createContext] 窗口已建，选像素格式");
     int fmt = ChoosePixelFormat(s->dc, &p);
     if (!fmt || !SetPixelFormat(s->dc, fmt, &p)) { fail("像素格式不可用"); return false; }
 
+    logLine("[createContext] 像素格式 OK，建 legacy 上下文");
     HGLRC legacy = wglCreateContext(s->dc);
     if (!legacy || !wglMakeCurrent(s->dc, legacy)) { fail("创建 GL 上下文失败"); return false; }
 
     // 硬件渲染核心（Azahar）要 Core Profile；先拿扩展再建。
     typedef HGLRC (WINAPI* PFN_CreateARB)(HDC, HGLRC, const int*);
     auto createARB = (PFN_CreateARB) wglGetProcAddress("wglCreateContextAttribsARB");
+    logLine("[createContext] legacy 上下文 OK，建 Core Profile");
     HGLRC core = nullptr;
     HGLRC sharedWith = nullptr;   // 不共享：Azahar 在共享上下文下会崩（azahar_libretro+0x397ba6）
     if (createARB) {
@@ -513,6 +551,11 @@ static int16_t inputCb(unsigned port, unsigned device, unsigned index, unsigned 
         return 0;
     }
 
+    if (device == RETRO_DEVICE_KEYBOARD) {
+        std::lock_guard<std::mutex> lk(s->keyMutex);
+        return (int16_t) (s->keysDown.count(id) ? 1 : 0);
+    }
+
     if (device == RETRO_DEVICE_POINTER && index == 0) {
         if (id == 0) return (int16_t) s->px;
         if (id == 1) return (int16_t) s->py;
@@ -582,6 +625,14 @@ static bool envCb(unsigned cmd, void* data) {
             s->pixFmt = (int) *(const unsigned*) data;
             logLine("SET_PIXEL_FORMAT=%d", s->pixFmt);
             return true;
+        case 12: { // SET_KEYBOARD_CALLBACK
+            auto* kb = (retro_keyboard_callback*) data;
+            if (!kb) return false;
+            s->kb = *kb;
+            s->hasKb = true;
+            logLine("SET_KEYBOARD_CALLBACK registered");
+            return true;
+        }
         case 14: { // SET_HW_RENDER：只换两个"宿主提供"的回调，其余保留核心自己的
             auto* cb = (retro_hw_render_callback*) data;
             s->hw = *cb;
@@ -620,7 +671,16 @@ static bool envCb(unsigned cmd, void* data) {
                     size_t bar = rest.find('|');
                     def = (bar == std::string::npos) ? rest : rest.substr(0, bar);
                 }
+                while (!def.empty() && (def.front() == ' ' || def.front() == '\t')) def.erase(def.begin());
+                while (!def.empty() && (def.back() == ' ' || def.back() == '\t')) def.pop_back();
                 s->options[key] = def;
+            }
+            // DOS（dosbox-pure）：跳过开机菜单直接跑内容，并固定 us 键盘布局
+            if (s->options.count("dosbox_pure_menu_timeout")) {
+                s->options["dosbox_pure_menu_timeout"] = "0";
+            }
+            if (s->options.count("dosbox_pure_keyboard_layout")) {
+                s->options["dosbox_pure_keyboard_layout"] = "us";
             }
             // 触摸屏：核心默认可能关闭鼠标/指针触摸，这里显式打开
             if (s->options.count("citra_enable_mouse_touchscreen")) {
@@ -727,6 +787,7 @@ static Session* newSession(const std::string& corePath, const std::string& game,
         s->audioDst = audio; s->audioCap = audioCap;
         g_slots[i].session = s;
         logLine("新建会话 token=%lld 槽=%zu", (long long) s->token, i);
+        { std::lock_guard<std::mutex> lk(g_liveGuard); g_live[s->token] = s; }
         return s.get();
     }
     fail("会话槽已满（最多 4 个）");
@@ -738,6 +799,7 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_november_minetendo_SessionHost_captureContext(JNIEnv*, jclass) {
     // 必须在 MC 渲染线程调用：把 MC 的 GL 上下文记下来，供会话上下文共享纹理/FBO。
     g_mcContext = wglGetCurrentContext();
+    g_mcDc = wglGetCurrentDC();
     logLine("captureContext: MC HGLRC=%p", (void*) g_mcContext);
 }
 
@@ -792,11 +854,14 @@ JNIEXPORT jlong JNICALL Java_com_november_minetendo_SessionHost_create(
         s->core.setAudio(audioCb);
         s->core.setPoll(pollCb);
         s->core.setInput(inputCb);
+        logLine("[create] 开始 retro_init");
         s->core.init();
+        logLine("[create] retro_init 完成");
         s->inited = true;
 
         retro_game_info gi{};
         gi.path = game;
+        logLine("[create] 开始 retro_load_game");
         if (!s->core.load(&gi)) throw std::runtime_error("核心拒绝加载游戏");
         s->loaded = true;
 
@@ -902,6 +967,13 @@ JNIEXPORT jboolean JNICALL Java_com_november_minetendo_SessionHost_nativeStep(
                         logLine("saveState(%s) %zu 字节", savePath.c_str(), size);
                     }
                 }
+            }
+        }
+        if (s->hasKb && s->kb.callback) {
+            std::deque<Session::KeyEv> batch;
+            { std::lock_guard<std::mutex> lk(s->keyMutex); batch.swap(s->keyQueue); }
+            for (const auto& ev : batch) {
+                s->kb.callback(ev.down, ev.code, ev.code < 128 ? ev.code : 0, 0);
             }
         }
         s->core.run();
@@ -1154,6 +1226,54 @@ JNIEXPORT jboolean JNICALL Java_com_november_minetendo_SessionHost_copyTo(
     }
 }
 
+// 同一会话内换内容：unload_game → load_game。
+// DOSBox-pure 在本进程里第二次 retro_init 会卡死，所以换游戏必须复用会话。
+JNIEXPORT jboolean JNICALL Java_com_november_minetendo_SessionHost_nativeReloadGame(
+        JNIEnv* env, jclass, jlong token, jstring gameJ) {
+    try {
+        if (!gameJ) return JNI_FALSE;
+        const char* game = env->GetStringUTFChars(gameJ, nullptr);
+        std::string gamePath = game ? game : "";
+        if (game) env->ReleaseStringUTFChars(gameJ, game);
+
+        std::shared_ptr<Session> sp = liveSession(token);
+        if (!sp) return JNI_FALSE;
+
+        // 必须在会话所属线程做核心调用：交给 worker 投递（这里直接用槽位锁同步）
+        Access a(token);
+        Session* s = a.s.get();
+        makeCurrent(s);
+        if (s->core.unload) { s->core.unload(); s->loaded = false; }
+        retro_game_info gi{};
+        gi.path = gamePath.c_str();
+        logLine("[reload] 换内容 → %s", gamePath.c_str());
+        if (!s->core.load || !s->core.load(&gi)) {
+            logLine("[reload] load_game 失败");
+            return JNI_FALSE;
+        }
+        s->loaded = true;
+        s->gamePath = gamePath;
+        retro_system_av_info av{};
+        if (s->core.av) {
+            s->core.av(&av);
+            if (av.timing.sample_rate > 1000) s->sampleRate = (unsigned) av.timing.sample_rate;
+            if (av.timing.fps > 1) s->fps = av.timing.fps;
+            if (av.geometry.base_width > 0) {
+                s->w = (int) av.geometry.base_width;
+                s->h = (int) av.geometry.base_height;
+                s->texW = s->w; s->texH = s->h;
+            }
+        }
+        logLine("[reload] 完成 %dx%d", s->w, s->h);
+        return JNI_TRUE;
+    } catch (const std::exception& e) {
+        logLine("[reload] 异常: %s", e.what());
+    } catch (...) {
+        logLine("[reload] 未知异常");
+    }
+    return JNI_FALSE;
+}
+
 JNIEXPORT void JNICALL Java_com_november_minetendo_SessionHost_destroy(JNIEnv*, jclass, jlong token) {
     try {
         size_t idx = slotOf(token);
@@ -1179,6 +1299,7 @@ JNIEXPORT void JNICALL Java_com_november_minetendo_SessionHost_destroy(JNIEnv*, 
                 s->inited = false;
             }
             logLine("核心已收尾（unload_game + deinit）");
+        { std::lock_guard<std::mutex> lk(g_liveGuard); g_live.erase(token); }
         } catch (...) {
         }
         // 核心模块仍然故意不 FreeLibrary（换系统靠新会话）。
@@ -1192,12 +1313,22 @@ JNIEXPORT jstring JNICALL Java_com_november_minetendo_SessionHost_lastError(JNIE
 
 JNIEXPORT void JNICALL Java_com_november_minetendo_SessionHost_setInput(
         JNIEnv*, jclass, jlong token, jint buttons, jint ax, jint ay, jint ax2, jint ay2) {
-    try { Access a(token); a.s->buttons = (uint32_t) buttons; a.s->ax = ax; a.s->ay = ay; a.s->ax2 = ax2; a.s->ay2 = ay2; } catch (...) {}
+    if (auto s = liveSession(token)) { s->buttons = (uint32_t) buttons; s->ax = ax; s->ay = ay; s->ax2 = ax2; s->ay2 = ay2; }
+}
+
+JNIEXPORT void JNICALL Java_com_november_minetendo_SessionHost_nativeKey(
+        JNIEnv*, jclass, jlong token, jint code, jboolean down) {
+    if (auto sp = liveSession(token)) {
+        std::lock_guard<std::mutex> lk(sp->keyMutex);
+        unsigned c = (unsigned) code;
+        if (down) sp->keysDown.insert(c); else sp->keysDown.erase(c);
+        sp->keyQueue.push_back(Session::KeyEv{c, down != 0});
+    }
 }
 
 JNIEXPORT void JNICALL Java_com_november_minetendo_SessionHost_setPointer(
         JNIEnv*, jclass, jlong token, jint x, jint y, jboolean down) {
-    try { Access a(token); a.s->px = x; a.s->py = y; a.s->pdown = down ? 1u : 0u; } catch (...) {}
+    if (auto s = liveSession(token)) { s->px = x; s->py = y; s->pdown = down ? 1u : 0u; }
 }
 
 }  // extern "C"
